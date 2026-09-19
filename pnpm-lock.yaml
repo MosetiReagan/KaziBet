@@ -18,6 +18,188 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  apps/admin:
+    dependencies:
+      '@kazibet/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  apps/ai:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kazibet/identity':
+        specifier: workspace:*
+        version: link:../../packages/identity
+      '@kazibet/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../../packages/tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  apps/api:
+    dependencies:
+      '@kazibet/betting-engine':
+        specifier: workspace:*
+        version: link:../../packages/betting-engine
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kazibet/identity':
+        specifier: workspace:*
+        version: link:../../packages/identity
+      '@kazibet/odds':
+        specifier: workspace:*
+        version: link:../../packages/odds
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/sports':
+        specifier: workspace:*
+        version: link:../../packages/sports
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../../packages/tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  apps/realtime:
+    dependencies:
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../../packages/tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  apps/web:
+    dependencies:
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/betting-engine:
+    dependencies:
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/odds':
+        specifier: workspace:*
+        version: link:../odds
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/cli:
+    dependencies:
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/odds':
+        specifier: workspace:*
+        version: link:../odds
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/sports':
+        specifier: workspace:*
+        version: link:../sports
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/compliance:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/config:
     dependencies:
       '@kazibet/shared':
@@ -47,7 +229,257 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/identity:
+    dependencies:
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/ledger:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/notifications:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/observability:
+    dependencies:
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/odds:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/payments:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/risk:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/rules:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/settlement:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/shared:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/sports:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/tenant:
+    dependencies:
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/ui:
+    dependencies:
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  services/simulator:
+    dependencies:
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kazibet/odds':
+        specifier: workspace:*
+        version: link:../../packages/odds
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kazibet/sports':
+        specifier: workspace:*
+        version: link:../../packages/sports
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../../packages/tenant
     devDependencies:
       '@types/node':
         specifier: ^22.10.5
