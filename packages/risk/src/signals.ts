@@ -1,11 +1,15 @@
-import { RiskAction } from '@kazibet/shared';
+import { RiskAction, TenantId, UserId } from '@kazibet/shared';
 
 export type SignalType =
   | 'RAPID_BET_VELOCITY'
   | 'DEPOSIT_SPIKE'
   | 'SUSPICIOUS_PAYMENT_REVERSAL'
   | 'MULTIPLE_FAILED_LOGINS'
-  | 'DEVICE_FINGERPRINT_MISMATCH';
+  | 'DEVICE_FINGERPRINT_MISMATCH'
+  | 'MARKET_EXPOSURE_LIMIT_EXCEEDED'
+  | 'MULTI_ACCOUNT_DEVICE_SHARING'
+  | 'MULTI_ACCOUNT_IP_SHARING'
+  | 'MULTI_ACCOUNT_PAYMENT_SHARING';
 
 export interface DetectedSignal {
   type: SignalType;
@@ -20,4 +24,14 @@ export interface RiskEvaluationResult {
   recommendedAction: RiskAction;
   signals: DetectedSignal[];
   requiresManualReview: boolean;
+}
+
+export interface UserDeviceProfile {
+  id: string;
+  tenantId: TenantId;
+  userId: UserId;
+  ipAddress: string;
+  deviceFingerprint: string;
+  mpesaPhoneName?: string;
+  lastSeenAt: Date;
 }

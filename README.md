@@ -62,7 +62,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Payments & M-Pesa** | `packages/payments` | **Done** | Full Safaricom Daraja STK push & B2C, OAuth caching, unguessable callback tokens, IP allowlisting, sweeper, statement CSV reconciliation |
 | **Settlement Engine** | `packages/settlement` | **Done** | Deterministic 1X2, Double Chance (1X/X2/12), Draw No Bet, Asian handicap (half-win/half-loss/push), dead heat, 20% WHT, early cashout, immutable resettlement with reversals |
 | **Compliance & KYC** | `packages/compliance` | **Simulated** | Tiered KYC, AML checks; KycProvider interface simulated; Phase 8 adds live provider |
-| **Risk & Fraud** | `packages/risk` | **Partial** | Stake surge, velocity checks, risk cases; Phase 7 adds exposure limits & multi-account |
+| **Risk & Fraud** | `packages/risk` | **Done** | Stake surge, velocity checks, liability tracking, automated exposure ceilings, multi-account device/IP/payment linking |
 | **Notifications Hub** | `packages/notifications` | **Simulated** | Multi-channel dispatcher with mock sandbox provider |
 | **Realtime Gateway** | `apps/realtime` | **Done** | SSE & WebSocket hub with tenant-scoped channel pub/sub |
 | **Rules & Analytics** | `packages/rules` | **Done** | GGR/NGR calculations, turnover metrics, CMS theme resolution |
