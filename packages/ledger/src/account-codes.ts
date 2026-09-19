@@ -37,6 +37,11 @@ export const STANDARD_ACCOUNTS = {
     type: 'EXPENSE' as LedgerAccountType,
     description: 'Gaming payout expenses for winning wagers'
   },
+  MARKETING_BONUS: {
+    code: 'EXPENSE:MARKETING_BONUS',
+    type: 'EXPENSE' as LedgerAccountType,
+    description: 'Marketing expenses for granted or rolled-over bonuses'
+  },
   TAX_WITHHOLDING: (beneficiary: string): StandardAccountDef => ({
     code: `LIABILITY:TAX_WITHHOLDING:${beneficiary.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`,
     type: 'LIABILITY',

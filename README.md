@@ -56,11 +56,11 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **REST API Gateway** | `apps/api` | **Partial** | Express REST gateway, tenant middleware, auth, betting, payments |
 | **Sports Catalog & Feeds** | `packages/sports` | **Done** | Fixtures, sports catalog, The Odds API provider (live & replay mode), simulator fallback, stale market auto-suspension |
 | **Odds Engine** | `packages/odds` | **Partial** | Margins, versioning, suspension; awaiting live external feed updates |
-| **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold |
+| **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold, wagering bonus engine (rollover, expiration, free bets) |
 | **Sports Simulator** | `services/simulator` | **Simulated** | Background synthetic match clock, goal generator, and odds fluctuations |
 | **Financial Ledger** | `packages/ledger` | **Done** | Double-entry journal engine, immutable lines, zero-sum balance auditor |
 | **Payments & M-Pesa** | `packages/payments` | **Done** | Full Safaricom Daraja STK push & B2C, OAuth caching, unguessable callback tokens, IP allowlisting, sweeper, statement CSV reconciliation |
-| **Settlement Engine** | `packages/settlement` | **Done** | Deterministic 1X2, Asian handicap (half-win/half-loss/push), dead heat, 20% WHT, early cashout, immutable resettlement with reversals |
+| **Settlement Engine** | `packages/settlement` | **Done** | Deterministic 1X2, Double Chance (1X/X2/12), Draw No Bet, Asian handicap (half-win/half-loss/push), dead heat, 20% WHT, early cashout, immutable resettlement with reversals |
 | **Compliance & KYC** | `packages/compliance` | **Simulated** | Tiered KYC, AML checks; KycProvider interface simulated; Phase 8 adds live provider |
 | **Risk & Fraud** | `packages/risk` | **Partial** | Stake surge, velocity checks, risk cases; Phase 7 adds exposure limits & multi-account |
 | **Notifications Hub** | `packages/notifications` | **Simulated** | Multi-channel dispatcher with mock sandbox provider |

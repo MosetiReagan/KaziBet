@@ -12,6 +12,7 @@
     "@kazibet/shared": "workspace:*",
     "@kazibet/config": "workspace:*",
     "@kazibet/database": "workspace:*",
+    "@kazibet/ledger": "workspace:*",
     "@kazibet/tenant": "workspace:*",
     "@kazibet/odds": "workspace:*"
   },

@@ -145,6 +145,9 @@ importers:
       '@kazibet/database':
         specifier: workspace:*
         version: link:../database
+      '@kazibet/ledger':
+        specifier: workspace:*
+        version: link:../ledger
       '@kazibet/odds':
         specifier: workspace:*
         version: link:../odds

@@ -58,6 +58,43 @@ export class SettlementRuleEvaluator {
         break;
       }
 
+      case 'DOUBLE_CHANCE': {
+        const isHomeWin = homeScore > awayScore;
+        const isDraw = homeScore === awayScore;
+        const isAwayWin = awayScore > homeScore;
+
+        for (const sel of selections) {
+          const n = sel.name.toUpperCase().replace(/\s+/g, '');
+          let won = false;
+          if (n === '1X' || n.includes('HOMEORDRAW') || (n.includes('HOME') && n.includes('DRAW'))) {
+            won = isHomeWin || isDraw;
+          } else if (n === 'X2' || n.includes('DRAWORAWAY') || (n.includes('AWAY') && n.includes('DRAW'))) {
+            won = isAwayWin || isDraw;
+          } else if (n === '12' || n.includes('HOMEORAWAY') || (n.includes('HOME') && n.includes('AWAY'))) {
+            won = isHomeWin || isAwayWin;
+          }
+          outcomeMap.set(sel.id, { status: won ? 'WON' : 'LOST', deadHeatFactor: 1.0 });
+        }
+        break;
+      }
+
+      case 'DRAW_NO_BET':
+      case 'DNB': {
+        const isDraw = homeScore === awayScore;
+        const isHomeWin = homeScore > awayScore;
+
+        for (const sel of selections) {
+          if (isDraw) {
+            outcomeMap.set(sel.id, { status: 'VOID', deadHeatFactor: 1.0 });
+          } else {
+            const isHomeSel = sel.name.toLowerCase().includes('home') || sel.name.toLowerCase() === '1';
+            const won = isHomeSel ? isHomeWin : !isHomeWin;
+            outcomeMap.set(sel.id, { status: won ? 'WON' : 'LOST', deadHeatFactor: 1.0 });
+          }
+        }
+        break;
+      }
+
       case 'OVER_UNDER': {
         const line = Number(parameters['line'] ?? 2.5);
         const totalGoals = homeScore + awayScore;

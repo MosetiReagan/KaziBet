@@ -574,5 +574,98 @@ describe('SettlementEngine & Cashout Suite', () => {
       }
     );
   });
+
+  test('DOUBLE_CHANCE market: correctly resolves 1X, X2, 12 across match outcomes', async () => {
+    const { ctx } = await setup();
+    const dcMarket = await ctx.markets.create(tenantId, {
+      id: 'mkt-dc-1',
+      tenantId,
+      eventId: 'evt-settle-1',
+      marketType: 'DOUBLE_CHANCE',
+      name: 'Double Chance',
+      status: 'ACTIVE',
+      parameters: {},
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    const sel1X = { id: 'sel-1x', name: '1X' };
+    const selX2 = { id: 'sel-x2', name: 'X2' };
+    const sel12 = { id: 'sel-12', name: '12' };
+    const selections = [sel1X, selX2, sel12];
+
+    const { SettlementRuleEvaluator } = await import('./rule-evaluator.js');
+
+    // 1. Home Win (2 - 1) -> 1X WON, X2 LOST, 12 WON
+    const homeWinOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DOUBLE_CHANCE',
+      {},
+      selections,
+      { homeScore: 2, awayScore: 1, status: 'FINISHED' }
+    );
+    assert.equal(homeWinOutcomes.get('sel-1x'), 'WON');
+    assert.equal(homeWinOutcomes.get('sel-x2'), 'LOST');
+    assert.equal(homeWinOutcomes.get('sel-12'), 'WON');
+
+    // 2. Draw (1 - 1) -> 1X WON, X2 WON, 12 LOST
+    const drawOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DOUBLE_CHANCE',
+      {},
+      selections,
+      { homeScore: 1, awayScore: 1, status: 'FINISHED' }
+    );
+    assert.equal(drawOutcomes.get('sel-1x'), 'WON');
+    assert.equal(drawOutcomes.get('sel-x2'), 'WON');
+    assert.equal(drawOutcomes.get('sel-12'), 'LOST');
+
+    // 3. Away Win (0 - 3) -> 1X LOST, X2 WON, 12 WON
+    const awayWinOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DOUBLE_CHANCE',
+      {},
+      selections,
+      { homeScore: 0, awayScore: 3, status: 'FINISHED' }
+    );
+    assert.equal(awayWinOutcomes.get('sel-1x'), 'LOST');
+    assert.equal(awayWinOutcomes.get('sel-x2'), 'WON');
+    assert.equal(awayWinOutcomes.get('sel-12'), 'WON');
+  });
+
+  test('DRAW_NO_BET market: voids on draw and pays out on outright win', async () => {
+    const selHome = { id: 'sel-dnb-1', name: 'Home' };
+    const selAway = { id: 'sel-dnb-2', name: 'Away' };
+    const selections = [selHome, selAway];
+
+    const { SettlementRuleEvaluator } = await import('./rule-evaluator.js');
+
+    // 1. Draw -> both VOID
+    const drawOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DRAW_NO_BET',
+      {},
+      selections,
+      { homeScore: 2, awayScore: 2, status: 'FINISHED' }
+    );
+    assert.equal(drawOutcomes.get('sel-dnb-1'), 'VOID');
+    assert.equal(drawOutcomes.get('sel-dnb-2'), 'VOID');
+
+    // 2. Home win -> Home WON, Away LOST
+    const homeWinOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DRAW_NO_BET',
+      {},
+      selections,
+      { homeScore: 1, awayScore: 0, status: 'FINISHED' }
+    );
+    assert.equal(homeWinOutcomes.get('sel-dnb-1'), 'WON');
+    assert.equal(homeWinOutcomes.get('sel-dnb-2'), 'LOST');
+
+    // 3. Away win -> Home LOST, Away WON
+    const awayWinOutcomes = SettlementRuleEvaluator.evaluateMarket(
+      'DRAW_NO_BET',
+      {},
+      selections,
+      { homeScore: 0, awayScore: 2, status: 'FINISHED' }
+    );
+    assert.equal(awayWinOutcomes.get('sel-dnb-1'), 'LOST');
+    assert.equal(awayWinOutcomes.get('sel-dnb-2'), 'WON');
+  });
 });
 
