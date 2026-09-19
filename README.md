@@ -59,7 +59,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold |
 | **Sports Simulator** | `services/simulator` | **Simulated** | Background synthetic match clock, goal generator, and odds fluctuations |
 | **Financial Ledger** | `packages/ledger` | **Done** | Double-entry journal engine, immutable lines, zero-sum balance auditor |
-| **Payments & M-Pesa** | `packages/payments` | **Simulated** | M-Pesa adapter uses simulated IDs/webhooks; Phase 2 implements Daraja OAuth/STK |
+| **Payments & M-Pesa** | `packages/payments` | **Done** | Full Safaricom Daraja STK push & B2C, OAuth caching, unguessable callback tokens, IP allowlisting, sweeper, statement CSV reconciliation |
 | **Settlement Engine** | `packages/settlement` | **Partial** | Deterministic 1X2 settlement, 20% WHT, cashout; Phase 5 adds Asian handicap/corrections |
 | **Compliance & KYC** | `packages/compliance` | **Simulated** | Tiered KYC, AML checks; KycProvider interface simulated; Phase 8 adds live provider |
 | **Risk & Fraud** | `packages/risk` | **Partial** | Stake surge, velocity checks, risk cases; Phase 7 adds exposure limits & multi-account |

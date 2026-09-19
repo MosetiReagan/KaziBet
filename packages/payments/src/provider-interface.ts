@@ -40,9 +40,19 @@ export interface WebhookVerificationResult {
   reason?: string;
 }
 
+export interface PaymentStatusQueryResult {
+  providerTxId: string;
+  status: PaymentStatus;
+  amountCents?: bigint;
+  resultCode?: number;
+  resultDesc?: string;
+}
+
 export interface PaymentProvider {
   readonly name: string;
   initiateDeposit(params: InitiateDepositParams): Promise<InitiateDepositResult>;
   initiateWithdrawal(params: InitiateWithdrawalParams): Promise<InitiateWithdrawalResult>;
   verifyWebhook(headers: Record<string, string>, rawBody: string, secret?: string): Promise<WebhookVerificationResult>;
+  queryPaymentStatus?(providerTxId: string): Promise<PaymentStatusQueryResult>;
 }
+

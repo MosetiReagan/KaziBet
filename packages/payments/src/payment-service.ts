@@ -7,14 +7,19 @@ import {
   InsufficientFundsError,
   createDomainEvent
 } from '@kazibet/shared';
-import { DatabaseTransactionContext, InMemoryDatabase, PaymentEntity } from '@kazibet/database';
+import { DatabaseTransactionContext, IDatabase, PaymentEntity } from '@kazibet/database';
 import { TenantContextHolder } from '@kazibet/tenant';
 import { LedgerEngine, STANDARD_ACCOUNTS } from '@kazibet/ledger';
 import { PaymentProvider } from './provider-interface.js';
 
+export interface WithdrawalOptions {
+  maxTransactionLimitCents?: bigint;
+  manualApprovalThresholdCents?: bigint;
+}
+
 export class PaymentService {
   constructor(
-    private readonly db: InMemoryDatabase,
+    private readonly db: IDatabase,
     private readonly ledger: LedgerEngine,
     private readonly providers: Map<string, PaymentProvider>
   ) {}
@@ -211,30 +216,53 @@ export class PaymentService {
     });
   }
 
-  public async initiateWithdrawal(params: {
-    tenantId: TenantId;
-    userId: UserId;
-    providerName: string;
-    amountCents: bigint;
-    destinationAccount: string;
-    currency?: Currency;
-    idempotencyKey: string;
-  }): Promise<PaymentEntity> {
+  public async initiateWithdrawal(
+    params: {
+      tenantId: TenantId;
+      userId: UserId;
+      providerName: string;
+      amountCents: bigint;
+      destinationAccount: string;
+      currency?: Currency;
+      idempotencyKey: string;
+    },
+    options?: WithdrawalOptions
+  ): Promise<PaymentEntity> {
     TenantContextHolder.assertTenant(params.tenantId);
     const currency = params.currency || 'KES';
 
+    // 1. Transaction limit check
+    if (options?.maxTransactionLimitCents && params.amountCents > options.maxTransactionLimitCents) {
+      throw new KaziBetError(
+        'RESPONSIBLE_GAMING_LIMIT_EXCEEDED',
+        `Withdrawal amount of ${params.amountCents} cents exceeds the max transaction limit of ${options.maxTransactionLimitCents} cents.`,
+        400
+      );
+    }
+
     return await this.db.transaction(async (tx) => {
-      // 1. Idempotency check
+      // 2. Idempotency check
       const existing = await tx.payments.findFirst(params.tenantId, { idempotencyKey: params.idempotencyKey });
       if (existing) return existing;
 
-      // 2. Check wallet available funds
+      // 3. Fraud hold check from risk cases
+      const openRiskCases = await tx.riskCases.findMany(params.tenantId, { userId: params.userId, status: 'OPEN' });
+      const hasFraudHold = openRiskCases.some(rc => rc.severity === 'HIGH' || rc.severity === 'CRITICAL');
+      if (hasFraudHold) {
+        throw new KaziBetError(
+          'ACCOUNT_SUSPENDED',
+          'Withdrawal held for security review due to an active elevated risk case.',
+          403
+        );
+      }
+
+      // 4. Check wallet available funds
       const wallet = await tx.wallets.findFirst(params.tenantId, { userId: params.userId, currency });
       if (!wallet || wallet.availableCents < params.amountCents) {
         throw new InsufficientFundsError('Insufficient available funds for withdrawal.');
       }
 
-      // 3. Post Double-Entry Journal:
+      // 5. Post Double-Entry Journal:
       // DR: LIABILITY:USER_AVAILABLE:<userId>
       // CR: ASSET:CLEARING:<provider>
       const clearingDef = STANDARD_ACCOUNTS.PAYMENT_CLEARING(params.providerName);
@@ -268,14 +296,21 @@ export class PaymentService {
         ]
       });
 
-      // 4. Update materialized wallet
+      // 6. Update materialized wallet
       await tx.wallets.update(params.tenantId, wallet.id, {
         availableCents: wallet.availableCents - params.amountCents,
         version: wallet.version + 1n,
         updatedAt: new Date()
       });
 
-      // 5. Create Payment entity
+      // 7. Manual approval threshold check
+      const requiresApproval = Boolean(
+        options?.manualApprovalThresholdCents && params.amountCents >= options.manualApprovalThresholdCents
+      );
+
+      const status: PaymentEntity['status'] = requiresApproval ? 'PENDING' : 'SUCCESS';
+
+      // 8. Create Payment entity
       const payment: PaymentEntity = {
         id: paymentId,
         tenantId: params.tenantId,
@@ -284,10 +319,13 @@ export class PaymentService {
         type: 'WITHDRAWAL',
         amountCents: params.amountCents,
         currency,
-        status: 'SUCCESS',
+        status,
         providerTxId: `wth-tx-${generateId().slice(0, 8)}`,
         idempotencyKey: params.idempotencyKey,
-        metadata: { destinationAccount: params.destinationAccount },
+        metadata: {
+          destinationAccount: params.destinationAccount,
+          requiresManualApproval: requiresApproval
+        },
         createdAt: new Date(),
         updatedAt: new Date()
       };
