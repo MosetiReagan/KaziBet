@@ -49,7 +49,7 @@ export type EventStatus =
 
 export type MarketStatus = 'ACTIVE' | 'SUSPENDED' | 'SETTLED' | 'VOIDED';
 
-export type SelectionStatus = 'ACTIVE' | 'SUSPENDED' | 'WON' | 'LOST' | 'VOID';
+export type SelectionStatus = 'ACTIVE' | 'SUSPENDED' | 'WON' | 'LOST' | 'VOID' | 'HALF_WON' | 'HALF_LOST';
 
 export type BetType = 'SINGLE' | 'ACCUMULATOR' | 'SYSTEM';
 

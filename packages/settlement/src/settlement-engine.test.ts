@@ -198,4 +198,381 @@ describe('SettlementEngine & Cashout Suite', () => {
       }
     );
   });
+
+  test('Asian handicap: settles HALF_WON (quarter line +0.25 on a 0-0 draw) with exact tax and balanced ledger', async () => {
+    const { settlement, ctx, ledger } = await setup();
+
+    await TenantContextHolder.run(
+      { tenantId, code: 'settle-test', domain: 'settle.local', currency: 'KES', capabilityStatus: 'SANDBOX' },
+      async () => {
+        const ahMarket = await ctx.markets.create(tenantId, {
+          id: 'mkt-ah-halfwin',
+          tenantId,
+          eventId: 'evt-settle-1',
+          marketType: 'ASIAN_HANDICAP',
+          name: 'Asian Handicap +0.25',
+          status: 'ACTIVE',
+          parameters: { handicap: 0.25 },
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const sel = await ctx.selections.create({
+          id: 'sel-ah-halfwin',
+          marketId: ahMarket.id,
+          name: 'Home (+0.25)',
+          currentOdds: 2.0,
+          version: 1,
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const bet = await ctx.bets.create(tenantId, {
+          id: 'bet-ah-halfwin',
+          tenantId,
+          betSlipId: 'slip-ah-1',
+          userId,
+          stakeCents: 20000n, // 200 KES
+          odds: 2.0,
+          potentialPayoutCents: 40000n,
+          payoutCents: 0n,
+          status: 'PLACED',
+          createdAt: new Date()
+        });
+
+        await ctx.betLegs.create({
+          id: 'leg-ah-1',
+          betId: bet.id,
+          eventId: 'evt-settle-1',
+          marketId: ahMarket.id,
+          selectionId: sel.id,
+          acceptedOdds: 2.0,
+          oddsVersion: 1,
+          status: 'PENDING'
+        });
+
+        // 0-0 Draw -> +0.25 gives E = +0.25 -> HALF_WON
+        await settlement.settleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          result: { homeScore: 0, awayScore: 0, status: 'FINISHED' }
+        });
+
+        const settledBet = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(settledBet?.status, 'HALF_WON');
+        // Gross: 100 * 2.0 + 100 = 300 KES (30,000 cents)
+        // Net Winnings: 10,000 cents
+        // 20% WHT: 2,000 cents
+        // Net Payout: 28,000 cents
+        assert.equal(settledBet?.payoutCents, 28000n);
+
+        const wallet = await ctx.wallets.findFirst(tenantId, { userId });
+        assert.equal(wallet?.availableCents, 28000n);
+
+        const audit = await ledger.auditSystemBalance(tenantId);
+        assert.equal(audit.balanced, true);
+      }
+    );
+  });
+
+  test('Asian handicap: settles HALF_LOST (quarter line -0.25 on a 0-0 draw) with balanced ledger', async () => {
+    const { settlement, ctx, ledger } = await setup();
+
+    await TenantContextHolder.run(
+      { tenantId, code: 'settle-test', domain: 'settle.local', currency: 'KES', capabilityStatus: 'SANDBOX' },
+      async () => {
+        const ahMarket = await ctx.markets.create(tenantId, {
+          id: 'mkt-ah-halfloss',
+          tenantId,
+          eventId: 'evt-settle-1',
+          marketType: 'ASIAN_HANDICAP',
+          name: 'Asian Handicap -0.25',
+          status: 'ACTIVE',
+          parameters: { handicap: -0.25 },
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const sel = await ctx.selections.create({
+          id: 'sel-ah-halfloss',
+          marketId: ahMarket.id,
+          name: 'Home (-0.25)',
+          currentOdds: 2.0,
+          version: 1,
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const bet = await ctx.bets.create(tenantId, {
+          id: 'bet-ah-halfloss',
+          tenantId,
+          betSlipId: 'slip-ah-2',
+          userId,
+          stakeCents: 20000n, // 200 KES
+          odds: 2.0,
+          potentialPayoutCents: 40000n,
+          payoutCents: 0n,
+          status: 'PLACED',
+          createdAt: new Date()
+        });
+
+        await ctx.betLegs.create({
+          id: 'leg-ah-2',
+          betId: bet.id,
+          eventId: 'evt-settle-1',
+          marketId: ahMarket.id,
+          selectionId: sel.id,
+          acceptedOdds: 2.0,
+          oddsVersion: 1,
+          status: 'PENDING'
+        });
+
+        // 0-0 Draw -> -0.25 gives E = -0.25 -> HALF_LOST
+        await settlement.settleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          result: { homeScore: 0, awayScore: 0, status: 'FINISHED' }
+        });
+
+        const settledBet = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(settledBet?.status, 'HALF_LOST');
+        // Half stake (100 KES = 10,000 cents) refunded, other half lost to GGR
+        assert.equal(settledBet?.payoutCents, 10000n);
+
+        const wallet = await ctx.wallets.findFirst(tenantId, { userId });
+        assert.equal(wallet?.availableCents, 10000n);
+
+        const audit = await ledger.auditSystemBalance(tenantId);
+        assert.equal(audit.balanced, true);
+      }
+    );
+  });
+
+  test('Dead heat rule: settles tied selections with reduced payout and balanced ledger', async () => {
+    const { settlement, ctx, ledger } = await setup();
+
+    await TenantContextHolder.run(
+      { tenantId, code: 'settle-test', domain: 'settle.local', currency: 'KES', capabilityStatus: 'SANDBOX' },
+      async () => {
+        const dhMarket = await ctx.markets.create(tenantId, {
+          id: 'mkt-dh-1',
+          tenantId,
+          eventId: 'evt-settle-1',
+          marketType: 'DEAD_HEAT',
+          name: 'Top Goalscorer',
+          status: 'ACTIVE',
+          parameters: {},
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const selSalah = await ctx.selections.create({
+          id: 'sel-salah',
+          marketId: dhMarket.id,
+          name: 'Mohamed Salah',
+          currentOdds: 3.0,
+          version: 1,
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const bet = await ctx.bets.create(tenantId, {
+          id: 'bet-dh-salah',
+          tenantId,
+          betSlipId: 'slip-dh-1',
+          userId,
+          stakeCents: 20000n, // 200 KES
+          odds: 3.0,
+          potentialPayoutCents: 60000n,
+          payoutCents: 0n,
+          status: 'PLACED',
+          createdAt: new Date()
+        });
+
+        await ctx.betLegs.create({
+          id: 'leg-dh-1',
+          betId: bet.id,
+          eventId: 'evt-settle-1',
+          marketId: dhMarket.id,
+          selectionId: selSalah.id,
+          acceptedOdds: 3.0,
+          oddsVersion: 1,
+          status: 'PENDING'
+        });
+
+        // Salah and Haaland tie for 1st place -> deadHeatPlaces: 1, winners: 2 -> factor: 0.5
+        await settlement.settleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          result: {
+            homeScore: 0,
+            awayScore: 0,
+            status: 'FINISHED',
+            winningSelectionNames: ['Mohamed Salah', 'Erling Haaland'],
+            deadHeatPlaces: 1
+          }
+        });
+
+        const settledBet = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(settledBet?.status, 'WON');
+        // Effective stake: 10,000 cents. Gross: 30,000 cents.
+        // Net Winnings on effective stake: 20,000 cents. 20% WHT: 4,000 cents.
+        // Net Payout: 26,000 cents.
+        assert.equal(settledBet?.payoutCents, 26000n);
+
+        const audit = await ledger.auditSystemBalance(tenantId);
+        assert.equal(audit.balanced, true);
+      }
+    );
+  });
+
+  test('Voided / Abandoned events: refunds stake cleanly via ledger reversal', async () => {
+    const { settlement, ctx, homeSel, market, ledger } = await setup();
+
+    await TenantContextHolder.run(
+      { tenantId, code: 'settle-test', domain: 'settle.local', currency: 'KES', capabilityStatus: 'SANDBOX' },
+      async () => {
+        const bet = await ctx.bets.create(tenantId, {
+          id: 'bet-abandoned-1',
+          tenantId,
+          betSlipId: 'slip-ab-1',
+          userId,
+          stakeCents: 20000n,
+          odds: 3.5,
+          potentialPayoutCents: 70000n,
+          payoutCents: 0n,
+          status: 'PLACED',
+          createdAt: new Date()
+        });
+
+        await ctx.betLegs.create({
+          id: 'leg-ab-1',
+          betId: bet.id,
+          eventId: 'evt-settle-1',
+          marketId: market.id,
+          selectionId: homeSel.id,
+          acceptedOdds: 3.5,
+          oddsVersion: 1,
+          status: 'PENDING'
+        });
+
+        // Event abandoned without completion
+        await settlement.settleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          result: { homeScore: 0, awayScore: 0, status: 'ABANDONED' }
+        });
+
+        const settledBet = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(settledBet?.status, 'VOIDED');
+        assert.equal(settledBet?.payoutCents, 20000n);
+
+        const wallet = await ctx.wallets.findFirst(tenantId, { userId });
+        assert.equal(wallet?.availableCents, 20000n);
+
+        const audit = await ledger.auditSystemBalance(tenantId);
+        assert.equal(audit.balanced, true);
+      }
+    );
+  });
+
+  test('Result correction and resettlement: reverses wrongful payout without mutating history, posts correct journal, and maintains sum DR == sum CR invariant', async () => {
+    const { settlement, ctx, homeSel, market, ledger } = await setup();
+
+    await TenantContextHolder.run(
+      { tenantId, code: 'settle-test', domain: 'settle.local', currency: 'KES', capabilityStatus: 'SANDBOX' },
+      async () => {
+        const bet = await ctx.bets.create(tenantId, {
+          id: 'bet-resettle-1',
+          tenantId,
+          betSlipId: 'slip-resettle-1',
+          userId,
+          stakeCents: 20000n, // 200 KES
+          odds: 3.0,
+          potentialPayoutCents: 60000n, // 600 KES
+          payoutCents: 0n,
+          status: 'PLACED',
+          createdAt: new Date()
+        });
+
+        await ctx.betLegs.create({
+          id: 'leg-resettle-1',
+          betId: bet.id,
+          eventId: 'evt-settle-1',
+          marketId: market.id,
+          selectionId: homeSel.id,
+          acceptedOdds: 3.0,
+          oddsVersion: 1,
+          status: 'PENDING'
+        });
+
+        // 1. Initial Wrong Settlement: Home won 1-0
+        await settlement.settleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          result: { homeScore: 1, awayScore: 0, status: 'FINISHED' }
+        });
+
+        const initialBet = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(initialBet?.status, 'WON');
+        // Gross: 60,000, Net Winnings: 40,000, Tax: 8,000, Payout: 52,000 cents
+        assert.equal(initialBet?.payoutCents, 52000n);
+
+        const walletAfterWrongWin = await ctx.wallets.findFirst(tenantId, { userId });
+        assert.equal(walletAfterWrongWin?.availableCents, 52000n);
+
+        // User withdraws 400 KES (40,000 cents) from wrongful winnings!
+        await ctx.wallets.update(tenantId, walletAfterWrongWin!.id, {
+          availableCents: 12000n // 52,000 - 40,000 = 12,000 remaining
+        });
+
+        // Initial ledger audit check
+        const auditInitial = await ledger.auditSystemBalance(tenantId);
+        assert.equal(auditInitial.balanced, true);
+
+        // 2. Result Correction Resettlement: Official result was actually 1-1 Draw (Home lost!)
+        const resettleReport = await settlement.resettleEventMarkets({
+          tenantId,
+          eventId: 'evt-settle-1',
+          correctedResult: { homeScore: 1, awayScore: 1, status: 'FINISHED' },
+          operatorId: 'operator-compliance-01',
+          reason: 'Official VAR match correction from Premier League',
+          force: true
+        });
+
+        assert.equal(resettleReport.resettledBetsCount, 1);
+
+        // 3. Assert bet status is now LOST
+        const betAfterResettle = await ctx.bets.findById(tenantId, bet.id);
+        assert.equal(betAfterResettle?.status, 'LOST');
+        assert.equal(betAfterResettle?.payoutCents, 0n);
+
+        // 4. Assert wallet has negative balance (-28,000 cents = 12,000 - 52,000 + 12,000)
+        const walletAfterResettle = await ctx.wallets.findFirst(tenantId, { userId });
+        assert.ok(walletAfterResettle!.availableCents < 0n);
+
+        // 5. Assert operator risk case was generated for negative balance
+        const riskCases = await ctx.riskCases.findMany(tenantId, {
+          userId,
+          signalType: 'NEGATIVE_BALANCE_AFTER_RESETTLEMENT'
+        });
+        assert.equal(riskCases.length, 1);
+        assert.equal(riskCases[0]?.severity, 'HIGH');
+
+        // 6. Assert audit log entry was created
+        const auditLogs = await ctx.auditLogs.findMany(tenantId, { action: 'EVENT_RESETTLED' });
+        assert.equal(auditLogs.length, 1);
+        assert.equal(auditLogs[0]?.actorId, 'operator-compliance-01');
+
+        // 7. Critical Invariant: Ledger balance invariant (sum DR == sum CR) across all journals
+        const auditFinal = await ledger.auditSystemBalance(tenantId);
+        assert.equal(auditFinal.balanced, true);
+        assert.equal(auditFinal.totalDebits, auditFinal.totalCredits);
+      }
+    );
+  });
 });
+
