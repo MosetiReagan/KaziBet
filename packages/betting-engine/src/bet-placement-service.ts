@@ -92,7 +92,7 @@ export class BetPlacementService {
       if (user.status === 'SELF_EXCLUDED') {
         throw new KaziBetError('SELF_EXCLUDED', 'Wager rejected: account is currently self-excluded.', 403);
       }
-      if (user.status !== 'ACTIVE') {
+      if (user.status !== 'ACTIVE' && user.status !== 'KYC_VERIFIED') {
         throw new KaziBetError('ACCOUNT_SUSPENDED', `Wager rejected: account status is ${user.status}.`, 403);
       }
 
