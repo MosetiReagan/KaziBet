@@ -1,6 +1,6 @@
 # KaziBet — Production-Grade Multi-Tenant Sports Betting Platform OS
 
-[![CI / CD](https://img.shields.io/badge/CI%2FCD-passing-brightgreen.svg)](#testing--verification)
+[![CI / CD](https://github.com/MosetiReagan/KaziBet/actions/workflows/ci.yml/badge.svg)](https://github.com/MosetiReagan/KaziBet/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](#license)
 [![Architecture: Multi-Tenant](https://img.shields.io/badge/Architecture-Multi--Tenant-blueviolet.svg)](#multi-tenancy--isolation-model)
 [![Accounting: Double--Entry](https://img.shields.io/badge/Ledger-Double--Entry%20Immutable-success.svg)](#immutable-double-entry-financial-ledger)
@@ -20,6 +20,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 
 ## Table of Contents
 
+- [Package Implementation Status](#package-implementation-status)
 - [System Architecture](#system-architecture)
 - [Repository Structure & Packages](#repository-structure--packages)
 - [Core Platform Guarantees](#core-platform-guarantees)
@@ -40,6 +41,37 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
   - [Section 53 End-to-End Lifecycle Verification](#section-53-end-to-end-lifecycle-verification)
 - [API Reference](#api-reference)
 - [Contributing & License](#contributing--license)
+
+---
+
+## Package Implementation Status
+
+| Package / Application | Directory | Status | Notes |
+|---|---|:---:|---|
+| **Core Domain Types** | `packages/shared` | **Done** | Domain entities, Money value object, events, error taxonomy |
+| **Configuration** | `packages/config` | **Done** | Schema validator, Kenya defaults, strict JWT secret enforcement |
+| **Database & Repos** | `packages/database` | **Simulated** | In-memory repository implementation active; Prisma ready for Phase 1 |
+| **Tenant Context** | `packages/tenant` | **Done** | Context holder (`AsyncLocalStorage`), isolation engine, state machine |
+| **Identity & RBAC** | `packages/identity` | **Done** | User registration, bcrypt hashing, JWT auth, RBAC permissions |
+| **REST API Gateway** | `apps/api` | **Partial** | Express REST gateway, tenant middleware, auth, betting, payments |
+| **Sports Catalog** | `packages/sports` | **Partial** | Sport catalog and fixtures; feed waiting for real provider adapter (Phase 3) |
+| **Odds Engine** | `packages/odds` | **Partial** | Margins, versioning, suspension; awaiting live external feed updates |
+| **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold |
+| **Sports Simulator** | `services/simulator` | **Simulated** | Background synthetic match clock, goal generator, and odds fluctuations |
+| **Financial Ledger** | `packages/ledger` | **Done** | Double-entry journal engine, immutable lines, zero-sum balance auditor |
+| **Payments & M-Pesa** | `packages/payments` | **Simulated** | M-Pesa adapter uses simulated IDs/webhooks; Phase 2 implements Daraja OAuth/STK |
+| **Settlement Engine** | `packages/settlement` | **Partial** | Deterministic 1X2 settlement, 20% WHT, cashout; Phase 5 adds Asian handicap/corrections |
+| **Compliance & KYC** | `packages/compliance` | **Simulated** | Tiered KYC, AML checks; KycProvider interface simulated; Phase 8 adds live provider |
+| **Risk & Fraud** | `packages/risk` | **Partial** | Stake surge, velocity checks, risk cases; Phase 7 adds exposure limits & multi-account |
+| **Notifications Hub** | `packages/notifications` | **Simulated** | Multi-channel dispatcher with mock sandbox provider |
+| **Realtime Gateway** | `apps/realtime` | **Done** | SSE & WebSocket hub with tenant-scoped channel pub/sub |
+| **Rules & Analytics** | `packages/rules` | **Done** | GGR/NGR calculations, turnover metrics, CMS theme resolution |
+| **AI Copilot (MCP)** | `apps/ai` | **Done** | Model Context Protocol server, RBAC-guardrailed operational tools |
+| **UI Components** | `packages/ui` | **Done** | Design tokens, odds buttons, slip widgets, badge components |
+| **Bettor Web App** | `apps/web` | **Simulated** | Static template demo; Phase 4 implements full interactive client |
+| **Operator Admin Portal** | `apps/admin` | **Partial** | HTML/REST operational dashboard for trading, settlement, copilot |
+| **CLI Administration** | `packages/cli` | **Done** | Unified `kazibet` tool for provisioning, seeding, diagnostics, backup |
+| **Observability** | `packages/observability` | **Done** | Structured logger, latency tracker, Prometheus metrics format |
 
 ---
 
@@ -211,7 +243,7 @@ KaziBet features a built-in AI copilot operating via the Model Context Protocol:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/kazibet/kazibet.git
+   git clone https://github.com/MosetiReagan/KaziBet.git
    cd KaziBet
    ```
 
@@ -296,7 +328,7 @@ pnpm --filter @kazibet/cli start backup --tenant "tenant_ke_default"
 ## Docker & Kubernetes Deployment
 
 ### Docker Containers
-Multi-stage production Dockerfiles are located in [`infrastructure/docker/`](file:///Users/reagan/Downloads/AI_MOdels/Public/KaziBet/infrastructure/docker):
+Multi-stage production Dockerfiles are located in [`infrastructure/docker/`](infrastructure/docker):
 ```bash
 docker build -t kazibet/api:latest -f infrastructure/docker/Dockerfile.api .
 docker build -t kazibet/web:latest -f infrastructure/docker/Dockerfile.web .
@@ -304,14 +336,14 @@ docker build -t kazibet/admin:latest -f infrastructure/docker/Dockerfile.admin .
 ```
 
 ### Kubernetes Manifests
-Standard Kubernetes deployment, service, and ingress manifests are available in [`infrastructure/kubernetes/`](file:///Users/reagan/Downloads/AI_MOdels/Public/KaziBet/infrastructure/kubernetes):
+Standard Kubernetes deployment, service, and ingress manifests are available in [`infrastructure/kubernetes/`](infrastructure/kubernetes):
 ```bash
 kubectl apply -f infrastructure/kubernetes/deployment.yaml
 kubectl apply -f infrastructure/kubernetes/ingress.yaml
 ```
 
 ### Terraform Infrastructure as Code
-Provision cloud infrastructure (VPC, Managed PostgreSQL, Elasticache Redis, Kubernetes clusters) using Terraform in [`infrastructure/terraform/`](file:///Users/reagan/Downloads/AI_MOdels/Public/KaziBet/infrastructure/terraform):
+Provision cloud infrastructure (VPC, Managed PostgreSQL, Elasticache Redis, Kubernetes clusters) using Terraform in [`infrastructure/terraform/`](infrastructure/terraform):
 ```bash
 cd infrastructure/terraform
 terraform init
