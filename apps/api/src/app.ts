@@ -3,15 +3,22 @@ import { URL } from 'node:url';
 import { generateId, KaziBetError } from '@kazibet/shared';
 import { TenantService, TenantContextHolder, TenantContext } from '@kazibet/tenant';
 import { AuthService } from '@kazibet/identity';
+import { SportsService } from '@kazibet/sports';
+import { OddsEngine } from '@kazibet/odds';
+import { BetPlacementService } from '@kazibet/betting-engine';
 import { ApiRequest, ApiResponse } from './http-types.js';
 import { Router } from './router.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerTenantRoutes } from './routes/tenant.js';
+import { registerSportsAndBettingRoutes } from './routes/betting.js';
 
 export interface AppDependencies {
   tenantService: TenantService;
   authService: AuthService;
+  sportsService?: SportsService;
+  oddsEngine?: OddsEngine;
+  bettingService?: BetPlacementService;
 }
 
 export function createApp(deps: AppDependencies): { server: Server; router: Router } {
@@ -20,6 +27,9 @@ export function createApp(deps: AppDependencies): { server: Server; router: Rout
   registerHealthRoutes(router);
   registerAuthRoutes(router, deps.authService);
   registerTenantRoutes(router, deps.tenantService);
+  if (deps.sportsService && deps.oddsEngine && deps.bettingService) {
+    registerSportsAndBettingRoutes(router, deps.sportsService, deps.oddsEngine, deps.bettingService);
+  }
 
   const server = createServer(async (req, res) => {
     const apiReq = req as ApiRequest;

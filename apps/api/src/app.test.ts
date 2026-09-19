@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { InMemoryDatabase } from '@kazibet/database';
 import { TenantService } from '@kazibet/tenant';
 import { AuthService } from '@kazibet/identity';
+import { SportsService } from '@kazibet/sports';
+import { OddsEngine } from '@kazibet/odds';
+import { BetPlacementService } from '@kazibet/betting-engine';
 import { createApp } from './app.js';
 import { Server } from 'node:http';
 
@@ -16,6 +19,9 @@ describe('KaziBet API Integration Suite', () => {
     const ctx = () => db.getContext();
     const tenantService = new TenantService(ctx);
     const authService = new AuthService(ctx, JWT_SECRET);
+    const sportsService = new SportsService(ctx);
+    const oddsEngine = new OddsEngine(ctx);
+    const bettingService = new BetPlacementService(db, oddsEngine);
 
     // Seed test tenants
     await tenantService.provisionTenant({
@@ -32,7 +38,13 @@ describe('KaziBet API Integration Suite', () => {
       defaultCurrency: 'KES'
     });
 
-    const app = createApp({ tenantService, authService });
+    const app = createApp({
+      tenantService,
+      authService,
+      sportsService,
+      oddsEngine,
+      bettingService
+    });
     server = app.server;
 
     await new Promise<void>((resolve) => {
@@ -108,5 +120,15 @@ describe('KaziBet API Integration Suite', () => {
     assert.equal(rivalRes.status, 403);
     const errBody = await rivalRes.json() as { error: { code: string } };
     assert.equal(errBody.error.code, 'TENANT_MISMATCH');
+  });
+
+  test('GET /api/v1/sports returns list of active sports', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/sports`);
+    assert.equal(res.status, 200);
+    const body = await res.json() as { sports: { slug: string }[] };
+    assert.ok(body.sports.length >= 5);
+    const slugs = body.sports.map(s => s.slug);
+    assert.ok(slugs.includes('football'));
+    assert.ok(slugs.includes('basketball'));
   });
 });

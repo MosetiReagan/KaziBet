@@ -1,6 +1,9 @@
 import { InMemoryDatabase } from '@kazibet/database';
 import { TenantService } from '@kazibet/tenant';
 import { AuthService } from '@kazibet/identity';
+import { SportsService } from '@kazibet/sports';
+import { OddsEngine } from '@kazibet/odds';
+import { BetPlacementService } from '@kazibet/betting-engine';
 import { loadEnv } from '@kazibet/config';
 import { createApp } from './app.js';
 
@@ -10,6 +13,9 @@ export async function startServer(port?: number): Promise<{ close: () => Promise
   const ctxProvider = () => db.getContext();
   const tenantService = new TenantService(ctxProvider);
   const authService = new AuthService(ctxProvider, env.JWT_SECRET);
+  const sportsService = new SportsService(ctxProvider);
+  const oddsEngine = new OddsEngine(ctxProvider);
+  const bettingService = new BetPlacementService(db, oddsEngine);
 
   // Seed reference Kenya tenant for sandbox
   await tenantService.provisionTenant({
@@ -19,7 +25,7 @@ export async function startServer(port?: number): Promise<{ close: () => Promise
     defaultCurrency: 'KES'
   });
 
-  const { server } = createApp({ tenantService, authService });
+  const { server } = createApp({ tenantService, authService, sportsService, oddsEngine, bettingService });
   const listenPort = port || env.API_PORT;
 
   return new Promise((resolve) => {
