@@ -9,7 +9,7 @@ import {
 } from '@kazibet/shared';
 import {
   DatabaseTransactionContext,
-  InMemoryDatabase,
+  IDatabase,
   LedgerAccountEntity,
   LedgerTransactionEntity,
   LedgerEntryEntity
@@ -33,7 +33,7 @@ export interface PostJournalParams {
 }
 
 export class LedgerEngine {
-  constructor(private readonly db: InMemoryDatabase) {}
+  constructor(private readonly db: IDatabase) {}
 
   public async getOrCreateAccount(params: {
     tenantId: TenantId;

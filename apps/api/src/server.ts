@@ -1,4 +1,4 @@
-import { InMemoryDatabase } from '@kazibet/database';
+import { InMemoryDatabase, PrismaDatabase, PrismaClient, IDatabase } from '@kazibet/database';
 import { TenantService } from '@kazibet/tenant';
 import { AuthService } from '@kazibet/identity';
 import { SportsService } from '@kazibet/sports';
@@ -9,7 +9,9 @@ import { createApp } from './app.js';
 
 export async function startServer(port?: number): Promise<{ close: () => Promise<void>; port: number }> {
   const env = loadEnv();
-  const db = new InMemoryDatabase();
+  const usePrisma = process.env['USE_PRISMA'] === 'true';
+  const prismaClient = usePrisma ? new PrismaClient() : null;
+  const db: IDatabase = prismaClient ? new PrismaDatabase(prismaClient) : new InMemoryDatabase();
   const ctxProvider = () => db.getContext();
   const tenantService = new TenantService(ctxProvider);
   const authService = new AuthService(ctxProvider, env.JWT_SECRET);

@@ -9,11 +9,15 @@
     "test": "node --test dist/**/*.test.js"
   },
   "dependencies": {
+    "@kazibet/config": "workspace:*",
     "@kazibet/shared": "workspace:*",
-    "@kazibet/config": "workspace:*"
+    "@prisma/client": "^6.19.3",
+    "ioredis": "^6.0.0"
   },
   "devDependencies": {
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^22.10.5",
+    "prisma": "6.19.3",
     "typescript": "^5.7.3"
   }
 }

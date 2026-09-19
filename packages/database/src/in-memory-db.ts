@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { TenantIsolationError } from '@kazibet/shared';
 import {
   TenantEntity,
@@ -20,6 +21,7 @@ import {
 } from './models.js';
 import {
   DatabaseTransactionContext,
+  IDatabase,
   Repository,
   TenantScopedRepository
 } from './repository.js';
@@ -147,7 +149,7 @@ class TenantScopedMemoryRepo<T extends { id: string; tenantId: string }> impleme
   }
 }
 
-export class InMemoryDatabase {
+export class InMemoryDatabase implements IDatabase {
   private tenantsStore = new Map<string, TenantEntity>();
   private usersStore = new Map<string, UserEntity>();
   private walletsStore = new Map<string, WalletEntity>();
@@ -165,6 +167,8 @@ export class InMemoryDatabase {
   private riskCasesStore = new Map<string, RiskCaseEntity>();
   private auditLogsStore = new Map<string, AuditLogEntity>();
   private outboxEventsStore = new Map<string, OutboxEventEntity>();
+
+  private transactionQueue: Promise<unknown> = Promise.resolve();
 
   public getContext(): DatabaseTransactionContext {
     return {
@@ -188,55 +192,73 @@ export class InMemoryDatabase {
     };
   }
 
+  private txStorage = new AsyncLocalStorage<DatabaseTransactionContext>();
+
   /**
    * Executes a transaction block with automatic rollback on error.
+   * Serializes concurrent transactions to prevent race conditions during high-volume betting,
+   * while allowing nested re-entrant transactions to participate without deadlocking.
    */
   public async transaction<T>(fn: (ctx: DatabaseTransactionContext) => Promise<T>): Promise<T> {
-    // Take snapshots of stores
-    const snapshot = {
-      tenants: new Map(this.tenantsStore),
-      users: new Map(this.usersStore),
-      wallets: new Map(this.walletsStore),
-      walletHolds: new Map(this.walletHoldsStore),
-      ledgerAccounts: new Map(this.ledgerAccountsStore),
-      ledgerTransactions: new Map(this.ledgerTransactionsStore),
-      ledgerEntries: new Map(this.ledgerEntriesStore),
-      events: new Map(this.eventsStore),
-      markets: new Map(this.marketsStore),
-      selections: new Map(this.selectionsStore),
-      betSlips: new Map(this.betSlipsStore),
-      bets: new Map(this.betsStore),
-      betLegs: new Map(this.betLegsStore),
-      payments: new Map(this.paymentsStore),
-      riskCases: new Map(this.riskCasesStore),
-      auditLogs: new Map(this.auditLogsStore),
-      outboxEvents: new Map(this.outboxEventsStore)
-    };
-
-    try {
-      const ctx = this.getContext();
-      return await fn(ctx);
-    } catch (err) {
-      // Rollback
-      this.tenantsStore = snapshot.tenants;
-      this.usersStore = snapshot.users;
-      this.walletsStore = snapshot.wallets;
-      this.walletHoldsStore = snapshot.walletHolds;
-      this.ledgerAccountsStore = snapshot.ledgerAccounts;
-      this.ledgerTransactionsStore = snapshot.ledgerTransactions;
-      this.ledgerEntriesStore = snapshot.ledgerEntries;
-      this.eventsStore = snapshot.events;
-      this.marketsStore = snapshot.markets;
-      this.selectionsStore = snapshot.selections;
-      this.betSlipsStore = snapshot.betSlips;
-      this.betsStore = snapshot.bets;
-      this.betLegsStore = snapshot.betLegs;
-      this.paymentsStore = snapshot.payments;
-      this.riskCasesStore = snapshot.riskCases;
-      this.auditLogsStore = snapshot.auditLogs;
-      this.outboxEventsStore = snapshot.outboxEvents;
-      throw err;
+    const activeCtx = this.txStorage.getStore();
+    if (activeCtx) {
+      return await fn(activeCtx);
     }
+
+    const result = new Promise<T>((resolve, reject) => {
+      this.transactionQueue = this.transactionQueue.then(async () => {
+        // Take snapshots of stores
+        const snapshot = {
+          tenants: new Map(this.tenantsStore),
+          users: new Map(this.usersStore),
+          wallets: new Map(this.walletsStore),
+          walletHolds: new Map(this.walletHoldsStore),
+          ledgerAccounts: new Map(this.ledgerAccountsStore),
+          ledgerTransactions: new Map(this.ledgerTransactionsStore),
+          ledgerEntries: new Map(this.ledgerEntriesStore),
+          events: new Map(this.eventsStore),
+          markets: new Map(this.marketsStore),
+          selections: new Map(this.selectionsStore),
+          betSlips: new Map(this.betSlipsStore),
+          bets: new Map(this.betsStore),
+          betLegs: new Map(this.betLegsStore),
+          payments: new Map(this.paymentsStore),
+          riskCases: new Map(this.riskCasesStore),
+          auditLogs: new Map(this.auditLogsStore),
+          outboxEvents: new Map(this.outboxEventsStore)
+        };
+
+        try {
+          const ctx = this.getContext();
+          const res = await this.txStorage.run(ctx, () => fn(ctx));
+          resolve(res);
+        } catch (err) {
+          // Rollback
+          this.tenantsStore = snapshot.tenants;
+          this.usersStore = snapshot.users;
+          this.walletsStore = snapshot.wallets;
+          this.walletHoldsStore = snapshot.walletHolds;
+          this.ledgerAccountsStore = snapshot.ledgerAccounts;
+          this.ledgerTransactionsStore = snapshot.ledgerTransactions;
+          this.ledgerEntriesStore = snapshot.ledgerEntries;
+          this.eventsStore = snapshot.events;
+          this.marketsStore = snapshot.markets;
+          this.selectionsStore = snapshot.selections;
+          this.betSlipsStore = snapshot.betSlips;
+          this.betsStore = snapshot.bets;
+          this.betLegsStore = snapshot.betLegs;
+          this.paymentsStore = snapshot.payments;
+          this.riskCasesStore = snapshot.riskCases;
+          this.auditLogsStore = snapshot.auditLogs;
+          this.outboxEventsStore = snapshot.outboxEvents;
+          reject(err);
+        }
+      }).catch(() => {
+        // Catch errors in the queue chain so subsequent transactions continue processing
+      });
+    });
+
+    return await result;
   }
 
   public clear(): void {

@@ -54,3 +54,9 @@ export interface TenantScopedRepository<T extends { id: string; tenantId: string
   delete(tenantId: string, id: string): Promise<boolean>;
   findFirst(tenantId: string, filter: Partial<T>): Promise<T | null>;
 }
+
+export interface IDatabase {
+  getContext(): DatabaseTransactionContext;
+  transaction<T>(fn: (ctx: DatabaseTransactionContext) => Promise<T>): Promise<T>;
+}
+

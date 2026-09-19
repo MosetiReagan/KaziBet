@@ -17,6 +17,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    profiles: ["default", "persistence"]
 
   redis:
     image: redis:7-alpine
@@ -30,6 +31,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    profiles: ["default", "persistence"]
 
   api:
     build:
@@ -38,6 +40,26 @@ services:
     container_name: kazibet-api
     environment:
       KAZIBET_ENVIRONMENT: SANDBOX
+      DATABASE_URL: postgresql://kazibet_admin:kazibet_secret@postgres:5432/kazibet_db?schema=public
+      REDIS_URL: redis://redis:6379
+      API_PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  api-persistence:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.api
+    container_name: kazibet-api-persistence
+    profiles: ["persistence"]
+    environment:
+      KAZIBET_ENVIRONMENT: SANDBOX
+      USE_PRISMA: "true"
       DATABASE_URL: postgresql://kazibet_admin:kazibet_secret@postgres:5432/kazibet_db?schema=public
       REDIS_URL: redis://redis:6379
       API_PORT: 4000

@@ -49,3 +49,13 @@ jobs:
 
       - name: Run Section 53 End-to-End Betting Lifecycle Test
         run: pnpm tsx --test tests/e2e-betting-lifecycle.test.ts
+
+      - name: Run Persistence Mid-Restart & Concurrency Tests
+        run: |
+          pnpm tsx --test tests/persistence-restart.test.ts
+          pnpm tsx --test packages/betting-engine/dist/concurrency.test.js
+
+      - name: Verify Docker-Compose Persistence Profile
+        run: |
+          docker compose --profile persistence config
+

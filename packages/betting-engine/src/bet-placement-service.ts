@@ -9,6 +9,7 @@ import {
   BetType
 } from '@kazibet/shared';
 import {
+  IDatabase,
   DatabaseTransactionContext,
   InMemoryDatabase,
   BetSlipEntity,
@@ -36,7 +37,7 @@ export interface BetPlacementResult {
 
 export class BetPlacementService {
   constructor(
-    private readonly db: InMemoryDatabase,
+    private readonly db: IDatabase,
     private readonly oddsEngine: OddsEngine
   ) {}
 

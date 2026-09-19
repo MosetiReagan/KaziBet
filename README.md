@@ -50,7 +50,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 |---|---|:---:|---|
 | **Core Domain Types** | `packages/shared` | **Done** | Domain entities, Money value object, events, error taxonomy |
 | **Configuration** | `packages/config` | **Done** | Schema validator, Kenya defaults, strict JWT secret enforcement |
-| **Database & Repos** | `packages/database` | **Simulated** | In-memory repository implementation active; Prisma ready for Phase 1 |
+| **Database & Repos** | `packages/database` | **Done** | Prisma-backed PostgreSQL repositories, row-level locking (`SELECT ... FOR UPDATE`), Redis locks, migrations, in-memory fallback |
 | **Tenant Context** | `packages/tenant` | **Done** | Context holder (`AsyncLocalStorage`), isolation engine, state machine |
 | **Identity & RBAC** | `packages/identity` | **Done** | User registration, bcrypt hashing, JWT auth, RBAC permissions |
 | **REST API Gateway** | `apps/api` | **Partial** | Express REST gateway, tenant middleware, auth, betting, payments |
