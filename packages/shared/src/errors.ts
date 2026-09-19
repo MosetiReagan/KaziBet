@@ -17,7 +17,11 @@ export type ErrorCode =
   | 'CAPABILITY_RESTRICTION'
   | 'LEDGER_UNBALANCED'
   | 'PAYMENT_FAILED'
-  | 'RECONCILIATION_MISMATCH';
+  | 'RECONCILIATION_MISMATCH'
+  | 'MFA_REQUIRED'
+  | 'RATE_LIMIT_EXCEEDED'
+  | 'FORBIDDEN_ORIGIN'
+  | 'PAYLOAD_TOO_LARGE';
 
 export interface ErrorResponseFormat {
   error: {

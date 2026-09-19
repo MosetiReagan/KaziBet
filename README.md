@@ -52,8 +52,8 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Configuration** | `packages/config` | **Done** | Schema validator, Kenya defaults, strict JWT secret enforcement |
 | **Database & Repos** | `packages/database` | **Done** | Prisma-backed PostgreSQL repositories, row-level locking (`SELECT ... FOR UPDATE`), Redis locks, migrations, in-memory fallback |
 | **Tenant Context** | `packages/tenant` | **Done** | Context holder (`AsyncLocalStorage`), isolation engine, state machine |
-| **Identity & RBAC** | `packages/identity` | **Done** | User registration, bcrypt hashing, JWT auth, RBAC permissions |
-| **REST API Gateway** | `apps/api` | **Partial** | Express REST gateway, tenant middleware, auth, betting, payments |
+| **Identity & RBAC** | `packages/identity` | **Done** | User registration, bcrypt hashing, JWT auth, RBAC permissions, RFC 6238 TOTP 2FA, single-use backup codes |
+| **REST API Gateway** | `apps/api` | **Done** | REST gateway, tenant routing, auth, sliding window rate limiting, Helmet security headers, CORS domain checks, 1MB/10MB limits |
 | **Sports Catalog & Feeds** | `packages/sports` | **Done** | Fixtures, sports catalog, The Odds API provider (live & replay mode), simulator fallback, stale market auto-suspension |
 | **Odds Engine** | `packages/odds` | **Partial** | Margins, versioning, suspension; awaiting live external feed updates |
 | **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold, wagering bonus engine (rollover, expiration, free bets) |

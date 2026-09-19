@@ -131,4 +131,120 @@ describe('KaziBet API Integration Suite', () => {
     assert.ok(slugs.includes('football'));
     assert.ok(slugs.includes('basketball'));
   });
+
+  test('Security headers: enforces Helmet-equivalent HTTP protection headers', async () => {
+    const res = await fetch(`${baseUrl}/health`);
+    assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(res.headers.get('x-frame-options'), 'DENY');
+    assert.ok(res.headers.get('strict-transport-security'));
+    assert.ok(res.headers.get('content-security-policy'));
+  });
+
+  test('Rate limiting: 6th login attempt within 15 minutes returns 429 Too Many Requests', async () => {
+    const testIp = '198.51.100.42';
+
+    // First 5 attempts succeed or return 401
+    for (let i = 0; i < 5; i++) {
+      const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Code': 'kazi-test',
+          'X-Forwarded-For': testIp
+        },
+        body: JSON.stringify({
+          identifier: 'bettor1@example.com',
+          password: 'WrongPassword!'
+        })
+      });
+      // Should not be 429 yet
+      assert.notEqual(res.status, 429, `Attempt ${i + 1} unexpectedly rate limited`);
+    }
+
+    // 6th attempt must be 429 Too Many Requests
+    const sixthRes = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-Code': 'kazi-test',
+        'X-Forwarded-For': testIp
+      },
+      body: JSON.stringify({
+        identifier: 'bettor1@example.com',
+        password: 'WrongPassword!'
+      })
+    });
+
+    assert.equal(sixthRes.status, 429);
+    assert.ok(sixthRes.headers.get('retry-after'));
+    const body = await sixthRes.json() as { error: { code: string } };
+    assert.equal(body.error.code, 'RATE_LIMIT_EXCEEDED');
+  });
+
+  test('CORS with Tenant Domain Validation: allows valid origin and rejects unauthorized origin outside sandbox', async () => {
+    // 1. Sandbox origin check: local origin allowed
+    const sandboxRes = await fetch(`${baseUrl}/health`, {
+      headers: {
+        'Origin': 'http://localhost:3000',
+        'X-Tenant-Code': 'kazi-test'
+      }
+    });
+    assert.equal(sandboxRes.status, 200);
+    assert.equal(sandboxRes.headers.get('access-control-allow-origin'), 'http://localhost:3000');
+
+    // 2. Production tenant unauthorized origin rejection -> 403 FORBIDDEN_ORIGIN
+    // Seed a production tenant
+    const app = createApp({
+      tenantService: new TenantService(new InMemoryDatabase().getContext),
+      authService: new AuthService(new InMemoryDatabase().getContext, JWT_SECRET)
+    });
+    // Create server with production tenant
+    const db = new InMemoryDatabase();
+    const ctx = db.getContext();
+    await ctx.tenants.create({
+      id: 'tenant-prod-1',
+      code: 'prod-sports',
+      name: 'Prod Sports',
+      domain: 'prodsports.co.ke',
+      defaultCurrency: 'KES',
+      capabilityStatus: 'PRODUCTION_ACTIVE',
+      config: {},
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    const prodApp = createApp({
+      tenantService: new TenantService(() => ctx),
+      authService: new AuthService(() => ctx, JWT_SECRET),
+      db
+    });
+
+    await new Promise<void>((resolve) => prodApp.server.listen(0, resolve));
+    const prodPort = (prodApp.server.address() as any).port;
+    const prodUrl = `http://127.0.0.1:${prodPort}`;
+
+    // Request from unauthorized foreign origin
+    const forbiddenRes = await fetch(`${prodUrl}/health`, {
+      headers: {
+        'Origin': 'http://malicious-phishing-site.com',
+        'X-Tenant-Code': 'prod-sports'
+      }
+    });
+
+    assert.equal(forbiddenRes.status, 403);
+    const errBody = await forbiddenRes.json() as { error: { code: string } };
+    assert.equal(errBody.error.code, 'FORBIDDEN_ORIGIN');
+
+    // Request from legitimate tenant origin
+    const allowedRes = await fetch(`${prodUrl}/health`, {
+      headers: {
+        'Origin': 'https://prodsports.co.ke',
+        'X-Tenant-Code': 'prod-sports'
+      }
+    });
+    assert.equal(allowedRes.status, 200);
+    assert.equal(allowedRes.headers.get('access-control-allow-origin'), 'https://prodsports.co.ke');
+
+    prodApp.server.close();
+  });
 });

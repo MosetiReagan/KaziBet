@@ -44,10 +44,12 @@ export function registerAuthRoutes(router: Router, authService: AuthService): vo
       throw new KaziBetError('TENANT_MISMATCH', 'Tenant context is missing.');
     }
 
-    const { identifier, password, roles } = req.body as {
+    const { identifier, password, roles, totpCode, backupCode } = req.body as {
       identifier?: string;
       password?: string;
       roles?: string[];
+      totpCode?: string;
+      backupCode?: string;
     };
 
     if (!identifier || !password) {
@@ -58,11 +60,50 @@ export function registerAuthRoutes(router: Router, authService: AuthService): vo
       tenantId: req.tenant.tenantId,
       identifier,
       password,
-      roles
+      roles,
+      totpCode,
+      backupCode
     });
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(result));
+  });
+
+  router.post('/api/v1/auth/2fa/setup', async (req, res) => {
+    if (!req.tenant || !req.user) {
+      throw new KaziBetError('UNAUTHORIZED', 'Authentication required.', 401);
+    }
+
+    const setupResult = await authService.setup2fa(
+      req.tenant.tenantId,
+      req.user.userId
+    );
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(setupResult));
+  });
+
+  router.post('/api/v1/auth/2fa/enable', async (req, res) => {
+    if (!req.tenant || !req.user) {
+      throw new KaziBetError('UNAUTHORIZED', 'Authentication required.', 401);
+    }
+
+    const { token } = req.body as { token?: string };
+    if (!token) {
+      throw new KaziBetError('VALIDATION_FAILED', 'Verification token is required.');
+    }
+
+    const updatedUser = await authService.enable2fa(
+      req.tenant.tenantId,
+      req.user.userId,
+      token
+    );
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      message: 'Two-factor authentication successfully enabled.',
+      mfaEnabled: updatedUser.mfaEnabled
+    }));
   });
 
   router.post('/api/v1/auth/self-exclude', async (req, res) => {
