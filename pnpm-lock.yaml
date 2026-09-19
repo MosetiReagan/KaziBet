@@ -18,6 +18,44 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/config:
+    dependencies:
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/database:
+    dependencies:
+      '@kazibet/config':
+        specifier: workspace:*
+        version: link:../config
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/shared:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
 packages:
 
   '@esbuild/aix-ppc64@0.28.2':
