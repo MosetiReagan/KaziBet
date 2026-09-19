@@ -5,13 +5,13 @@ import {
   KaziBetError,
   createDomainEvent
 } from '@kazibet/shared';
-import { DatabaseTransactionContext, InMemoryDatabase, UserEntity } from '@kazibet/database';
+import { DatabaseTransactionContext, IDatabase, UserEntity } from '@kazibet/database';
 import { TenantContextHolder } from '@kazibet/tenant';
 import { KycProvider, KycDocumentInput } from './kyc-provider-interface.js';
 
 export class KycService {
   constructor(
-    private readonly db: InMemoryDatabase,
+    private readonly db: IDatabase,
     private readonly provider: KycProvider
   ) {}
 
@@ -19,6 +19,7 @@ export class KycService {
     tenantId: TenantId;
     userId: UserId;
     document: KycDocumentInput;
+    mpesaRegisteredName?: string;
   }): Promise<{ status: string; tier: number; user: UserEntity }> {
     TenantContextHolder.assertTenant(params.tenantId);
     const ctx = this.db.getContext();
@@ -29,7 +30,7 @@ export class KycService {
     }
 
     // 1. Verify document
-    const docRes = await this.provider.verifyDocument(params.document);
+    const docRes = await this.provider.verifyDocument(params.document, params.mpesaRegisteredName);
 
     // 2. Screen AML
     const amlRes = await this.provider.screenAml(params.document.fullName, params.document.country);

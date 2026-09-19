@@ -24,6 +24,6 @@ export interface AmlScreeningResult {
 
 export interface KycProvider {
   readonly name: string;
-  verifyDocument(input: KycDocumentInput): Promise<KycVerificationResult>;
+  verifyDocument(input: KycDocumentInput, mpesaRegisteredName?: string): Promise<KycVerificationResult>;
   screenAml(fullName: string, country: string): Promise<AmlScreeningResult>;
 }
