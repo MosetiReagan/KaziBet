@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@kazibet/shared": ["../shared/dist/index.d.ts"],
+      "@kazibet/config": ["../config/dist/index.d.ts"],
+      "@kazibet/database": ["../database/dist/index.d.ts"],
+      "@kazibet/tenant": ["../tenant/dist/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
