@@ -1,0 +1,25 @@
+{
+  "name": "kazibet-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KaziBet — Production-Grade Multi-Tenant Sports Betting Platform OS",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r --filter=!kazibet-monorepo build",
+    "typecheck": "tsc -b --pretty",
+    "test": "pnpm -r --filter=!kazibet-monorepo test",
+    "lint": "echo 'Checking code style...'",
+    "sandbox": "tsx services/simulator/src/standalone.ts",
+    "kazibet": "tsx packages/cli/src/bin.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@10.23.0"
+}

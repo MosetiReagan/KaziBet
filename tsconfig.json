@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@kazibet/shared": ["packages/shared/src"],
+      "@kazibet/config": ["packages/config/src"],
+      "@kazibet/database": ["packages/database/src"],
+      "@kazibet/tenant": ["packages/tenant/src"],
+      "@kazibet/identity": ["packages/identity/src"],
+      "@kazibet/sports": ["packages/sports/src"],
+      "@kazibet/odds": ["packages/odds/src"],
+      "@kazibet/betting-engine": ["packages/betting-engine/src"],
+      "@kazibet/ledger": ["packages/ledger/src"],
+      "@kazibet/payments": ["packages/payments/src"],
+      "@kazibet/settlement": ["packages/settlement/src"],
+      "@kazibet/risk": ["packages/risk/src"],
+      "@kazibet/compliance": ["packages/compliance/src"],
+      "@kazibet/notifications": ["packages/notifications/src"],
+      "@kazibet/audit": ["packages/audit/src"],
+      "@kazibet/rules": ["packages/rules/src"],
+      "@kazibet/observability": ["packages/observability/src"],
+      "@kazibet/security": ["packages/security/src"],
+      "@kazibet/ui": ["packages/ui/src"],
+      "@kazibet/sdk": ["packages/sdk/src"],
+      "@kazibet/cli": ["packages/cli/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build", ".next"]
+}
