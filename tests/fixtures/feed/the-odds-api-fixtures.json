@@ -1,0 +1,29 @@
+[
+  {
+    "id": "toa-epl-001",
+    "sport_key": "soccer_epl",
+    "sport_title": "English Premier League",
+    "commence_time": "2026-09-20T14:00:00Z",
+    "home_team": "Arsenal",
+    "away_team": "Chelsea",
+    "completed": false
+  },
+  {
+    "id": "toa-kpl-002",
+    "sport_key": "soccer_kenya_premier_league",
+    "sport_title": "Kenya Premier League",
+    "commence_time": "2026-09-20T12:00:00Z",
+    "home_team": "Gor Mahia",
+    "away_team": "AFC Leopards",
+    "completed": false
+  },
+  {
+    "id": "toa-ucl-003",
+    "sport_key": "soccer_uefa_champs_league",
+    "sport_title": "UEFA Champions League",
+    "commence_time": "2026-09-20T19:00:00Z",
+    "home_team": "Real Madrid",
+    "away_team": "Bayern Munich",
+    "completed": false
+  }
+]

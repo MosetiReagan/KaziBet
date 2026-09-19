@@ -54,7 +54,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Tenant Context** | `packages/tenant` | **Done** | Context holder (`AsyncLocalStorage`), isolation engine, state machine |
 | **Identity & RBAC** | `packages/identity` | **Done** | User registration, bcrypt hashing, JWT auth, RBAC permissions |
 | **REST API Gateway** | `apps/api` | **Partial** | Express REST gateway, tenant middleware, auth, betting, payments |
-| **Sports Catalog** | `packages/sports` | **Partial** | Sport catalog and fixtures; feed waiting for real provider adapter (Phase 3) |
+| **Sports Catalog & Feeds** | `packages/sports` | **Done** | Fixtures, sports catalog, The Odds API provider (live & replay mode), simulator fallback, stale market auto-suspension |
 | **Odds Engine** | `packages/odds` | **Partial** | Margins, versioning, suspension; awaiting live external feed updates |
 | **Betting Engine** | `packages/betting-engine` | **Done** | Slip valuation, accumulators, anti-correlation, wallet hold |
 | **Sports Simulator** | `services/simulator` | **Simulated** | Background synthetic match clock, goal generator, and odds fluctuations |
