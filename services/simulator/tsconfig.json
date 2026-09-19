@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@kazibet/shared": ["../../packages/shared/dist/index.d.ts"],
+      "@kazibet/database": ["../../packages/database/dist/index.d.ts"],
+      "@kazibet/tenant": ["../../packages/tenant/dist/index.d.ts"],
+      "@kazibet/sports": ["../../packages/sports/dist/index.d.ts"],
+      "@kazibet/odds": ["../../packages/odds/dist/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
