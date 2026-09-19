@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@kazibet/shared": ["../shared/dist/index.d.ts"],
+      "@kazibet/database": ["../database/dist/index.d.ts"],
+      "@kazibet/tenant": ["../tenant/dist/index.d.ts"],
+      "@kazibet/odds": ["../odds/dist/index.d.ts"],
+      "@kazibet/betting-engine": ["../betting-engine/dist/index.d.ts"],
+      "@kazibet/sports": ["../sports/dist/index.d.ts"],
+      "@kazibet/settlement": ["../settlement/dist/index.d.ts"],
+      "@kazibet/ledger": ["../ledger/dist/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

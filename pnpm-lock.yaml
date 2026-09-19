@@ -275,6 +275,40 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/kenya:
+    dependencies:
+      '@kazibet/betting-engine':
+        specifier: workspace:*
+        version: link:../betting-engine
+      '@kazibet/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kazibet/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@kazibet/odds':
+        specifier: workspace:*
+        version: link:../odds
+      '@kazibet/settlement':
+        specifier: workspace:*
+        version: link:../settlement
+      '@kazibet/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@kazibet/sports':
+        specifier: workspace:*
+        version: link:../sports
+      '@kazibet/tenant':
+        specifier: workspace:*
+        version: link:../tenant
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.4
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/ledger:
     dependencies:
       '@kazibet/database':

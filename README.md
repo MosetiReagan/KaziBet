@@ -72,6 +72,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Operator Admin Portal** | `apps/admin` | **Partial** | HTML/REST operational dashboard for trading, settlement, copilot |
 | **CLI Administration** | `packages/cli` | **Done** | Unified `kazibet` tool for provisioning, seeding, diagnostics, backup |
 | **Observability** | `packages/observability` | **Done** | Structured logger, latency tracker, Prometheus metrics format |
+| **Kenya Localization** | `packages/kenya` | **Done** | USSD betting state machine (*123#), SMS betting parser (team aliases, accumulators, balance, cashout), 160-char screen enforcement |
 
 ---
 

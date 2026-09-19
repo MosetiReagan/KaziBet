@@ -1,0 +1,25 @@
+{
+  "name": "@kazibet/kenya",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@kazibet/shared": "workspace:*",
+    "@kazibet/database": "workspace:*",
+    "@kazibet/tenant": "workspace:*",
+    "@kazibet/betting-engine": "workspace:*",
+    "@kazibet/sports": "workspace:*",
+    "@kazibet/settlement": "workspace:*",
+    "@kazibet/ledger": "workspace:*",
+    "@kazibet/odds": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}

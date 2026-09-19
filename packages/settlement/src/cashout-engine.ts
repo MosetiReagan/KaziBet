@@ -5,13 +5,13 @@ import {
   KaziBetError,
   createDomainEvent
 } from '@kazibet/shared';
-import { InMemoryDatabase, BetEntity } from '@kazibet/database';
+import { IDatabase, BetEntity } from '@kazibet/database';
 import { TenantContextHolder } from '@kazibet/tenant';
 import { LedgerEngine, STANDARD_ACCOUNTS } from '@kazibet/ledger';
 
 export class CashoutEngine {
   constructor(
-    private readonly db: InMemoryDatabase,
+    private readonly db: IDatabase,
     private readonly ledger: LedgerEngine
   ) {}
 
