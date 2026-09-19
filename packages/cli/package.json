@@ -1,0 +1,25 @@
+{
+  "name": "@kazibet/cli",
+  "version": "1.0.0",
+  "private": true,
+  "bin": {
+    "kazibet": "./dist/bin.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@kazibet/shared": "workspace:*",
+    "@kazibet/config": "workspace:*",
+    "@kazibet/database": "workspace:*",
+    "@kazibet/tenant": "workspace:*",
+    "@kazibet/sports": "workspace:*",
+    "@kazibet/odds": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}
