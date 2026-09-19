@@ -1,0 +1,104 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kazibet-postgres
+    environment:
+      POSTGRES_USER: kazibet_admin
+      POSTGRES_PASSWORD: kazibet_secret
+      POSTGRES_DB: kazibet_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kazibet_admin -d kazibet_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: kazibet-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.api
+    container_name: kazibet-api
+    environment:
+      KAZIBET_ENVIRONMENT: SANDBOX
+      DATABASE_URL: postgresql://kazibet_admin:kazibet_secret@postgres:5432/kazibet_db?schema=public
+      REDIS_URL: redis://redis:6379
+      API_PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  realtime:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.realtime
+    container_name: kazibet-realtime
+    ports:
+      - "4001:4001"
+    depends_on:
+      - api
+
+  ai:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.ai
+    container_name: kazibet-ai
+    ports:
+      - "4002:4002"
+    depends_on:
+      - api
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.web
+    container_name: kazibet-web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  admin:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.admin
+    container_name: kazibet-admin
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+
+  simulator:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.simulator
+    container_name: kazibet-simulator
+    environment:
+      KAZIBET_ENVIRONMENT: SANDBOX
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
