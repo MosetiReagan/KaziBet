@@ -16,7 +16,10 @@
     "@kazibet/identity": "workspace:*",
     "@kazibet/sports": "workspace:*",
     "@kazibet/odds": "workspace:*",
-    "@kazibet/betting-engine": "workspace:*"
+    "@kazibet/betting-engine": "workspace:*",
+    "@kazibet/ledger": "workspace:*",
+    "@kazibet/payments": "workspace:*",
+    "@kazibet/settlement": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

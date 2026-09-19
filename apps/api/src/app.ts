@@ -6,12 +6,16 @@ import { AuthService } from '@kazibet/identity';
 import { SportsService } from '@kazibet/sports';
 import { OddsEngine } from '@kazibet/odds';
 import { BetPlacementService } from '@kazibet/betting-engine';
+import { PaymentService } from '@kazibet/payments';
+import { CashoutEngine } from '@kazibet/settlement';
+import { IDatabase } from '@kazibet/database';
 import { ApiRequest, ApiResponse } from './http-types.js';
 import { Router } from './router.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerTenantRoutes } from './routes/tenant.js';
 import { registerSportsAndBettingRoutes } from './routes/betting.js';
+import { registerCashierRoutes } from './routes/cashier.js';
 
 export interface AppDependencies {
   tenantService: TenantService;
@@ -19,6 +23,9 @@ export interface AppDependencies {
   sportsService?: SportsService;
   oddsEngine?: OddsEngine;
   bettingService?: BetPlacementService;
+  paymentService?: PaymentService;
+  cashoutEngine?: CashoutEngine;
+  db?: IDatabase;
 }
 
 export function createApp(deps: AppDependencies): { server: Server; router: Router } {
@@ -28,7 +35,17 @@ export function createApp(deps: AppDependencies): { server: Server; router: Rout
   registerAuthRoutes(router, deps.authService);
   registerTenantRoutes(router, deps.tenantService);
   if (deps.sportsService && deps.oddsEngine && deps.bettingService) {
-    registerSportsAndBettingRoutes(router, deps.sportsService, deps.oddsEngine, deps.bettingService);
+    registerSportsAndBettingRoutes(
+      router,
+      deps.sportsService,
+      deps.oddsEngine,
+      deps.bettingService,
+      deps.db,
+      deps.cashoutEngine
+    );
+  }
+  if (deps.paymentService && deps.db) {
+    registerCashierRoutes(router, deps.paymentService, deps.db);
   }
 
   const server = createServer(async (req, res) => {

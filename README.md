@@ -68,7 +68,7 @@ Unlike basic betting prototypes or monolithic gambling scripts, KaziBet is archi
 | **Rules & Analytics** | `packages/rules` | **Done** | GGR/NGR calculations, turnover metrics, CMS theme resolution |
 | **AI Copilot (MCP)** | `apps/ai` | **Done** | Model Context Protocol server, RBAC-guardrailed operational tools |
 | **UI Components** | `packages/ui` | **Done** | Design tokens, odds buttons, slip widgets, badge components |
-| **Bettor Web App** | `apps/web` | **Simulated** | Static template demo; Phase 4 implements full interactive client |
+| **Bettor Web App** | `apps/web` | **Done** | Connected to API & realtime SSE, working bet slip, 20% WHT math, M-Pesa cashier, My Bets & cashout |
 | **Operator Admin Portal** | `apps/admin` | **Partial** | HTML/REST operational dashboard for trading, settlement, copilot |
 | **CLI Administration** | `packages/cli` | **Done** | Unified `kazibet` tool for provisioning, seeding, diagnostics, backup |
 | **Observability** | `packages/observability` | **Done** | Structured logger, latency tracker, Prometheus metrics format |

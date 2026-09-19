@@ -76,9 +76,18 @@ importers:
       '@kazibet/identity':
         specifier: workspace:*
         version: link:../../packages/identity
+      '@kazibet/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
       '@kazibet/odds':
         specifier: workspace:*
         version: link:../../packages/odds
+      '@kazibet/payments':
+        specifier: workspace:*
+        version: link:../../packages/payments
+      '@kazibet/settlement':
+        specifier: workspace:*
+        version: link:../../packages/settlement
       '@kazibet/shared':
         specifier: workspace:*
         version: link:../../packages/shared
