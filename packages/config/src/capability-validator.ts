@@ -29,7 +29,7 @@ export class CapabilityValidator {
       });
     }
 
-    if (config.tax.withholdingTaxPercentage < 0 || !config.tax.taxBeneficiaryName) {
+    if (!config.tax || config.tax.withholdingTaxPercentage === undefined || config.tax.withholdingTaxPercentage < 0 || !config.tax.taxBeneficiaryName) {
       issues.push({
         field: 'tax',
         message: 'A compliant tax configuration with beneficiary name is mandatory for production.'
@@ -37,7 +37,7 @@ export class CapabilityValidator {
     }
 
     // 3. KYC / AML Configuration
-    if (!config.providers.kyc?.apiKey || config.providers.kyc.provider === 'mock') {
+    if (!config.providers?.kyc?.apiKey || config.providers?.kyc?.provider === 'mock') {
       issues.push({
         field: 'providers.kyc',
         message: 'A certified production KYC/AML provider must be configured.'
@@ -45,7 +45,7 @@ export class CapabilityValidator {
     }
 
     // 4. Live Payment Gateway
-    const payment = config.providers.paymentGateways;
+    const payment = config.providers?.paymentGateways;
     const hasLivePayment = Boolean(
       (payment?.mpesa?.consumerKey && payment?.mpesa?.consumerSecret) ||
       (payment?.airtelMoney?.clientId && payment?.airtelMoney?.clientSecret) ||
@@ -60,7 +60,7 @@ export class CapabilityValidator {
     }
 
     // 5. Sports & Odds Feed
-    if (!config.providers.sportsData?.apiKey && !config.providers.oddsData?.apiKey) {
+    if (!config.providers?.sportsData?.apiKey && !config.providers?.oddsData?.apiKey) {
       issues.push({
         field: 'providers.sportsData',
         message: 'Commercial sports data or odds provider credentials must be configured for production.'
@@ -68,7 +68,7 @@ export class CapabilityValidator {
     }
 
     // 6. Responsible Gaming Mandates
-    if (!config.responsibleGaming.allowSelfExclusion || config.responsibleGaming.maxDailyDepositLimitCents <= 0n) {
+    if (!config.responsibleGaming?.allowSelfExclusion || !config.responsibleGaming?.maxDailyDepositLimitCents || config.responsibleGaming.maxDailyDepositLimitCents <= 0n) {
       issues.push({
         field: 'responsibleGaming',
         message: 'Responsible gaming controls (self-exclusion and deposit ceilings) must be enabled.'
